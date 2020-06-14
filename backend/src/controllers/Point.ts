@@ -3,8 +3,11 @@ import knex from '../database/index';
 
 class Point {
   async create(request: Request, response: Response) {
+    const defaultImage =
+      'https://images.unsplash.com/photo-1503596476-1c12a8ba09a9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60';
     const {
       name,
+      image = defaultImage,
       email,
       whatsapp,
       latitude,
@@ -15,7 +18,7 @@ class Point {
     } = request.body;
 
     const point = {
-      image: 'some_image',
+      image,
       name,
       email,
       whatsapp,
@@ -24,6 +27,9 @@ class Point {
       city,
       uf,
     };
+
+    if (!name || !email || !whatsapp || !latitude || !longitude || !city || !uf)
+      return response.status(400).json({ error: 'Missing data' });
 
     try {
       const trx = await knex.transaction();
@@ -43,7 +49,7 @@ class Point {
 
       return response.json({ id: point_id, ...point });
     } catch (e) {
-      console.log(e);
+      return response.status(500).json(e);
     }
   }
 
